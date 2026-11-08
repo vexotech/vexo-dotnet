@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Vexo</RootNamespace>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <PackageId>Vexo.Server</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Vexo</Authors>
+    <Description>Send server-side events and identifies to Vexo from .NET.</Description>
+    <PackageTags>vexo;analytics;server-side;events</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://docs.vexo.co/server-side/capture</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
+    <InternalsVisibleTo Include="Vexo.Tests" />
+  </ItemGroup>
+
+</Project>
