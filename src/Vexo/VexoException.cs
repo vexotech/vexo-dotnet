@@ -5,7 +5,8 @@ namespace Vexo;
 
 /// <summary>
 /// A send failure, or messages that Vexo dropped, reported to <see cref="VexoOptions.OnError"/>. The client never throws
-/// it from <see cref="VexoClient.Capture"/> or <see cref="VexoClient.Identify"/>.
+/// it from <see cref="VexoClient.Capture(string, string, object?, DateTimeOffset?, string?)"/> or
+/// <see cref="VexoClient.Identify"/>.
 /// </summary>
 public sealed class VexoException : Exception
 {

@@ -6,7 +6,8 @@ using System.Threading.Channels;
 namespace Vexo;
 
 /// <summary>
-/// Sends events and identifies to the Vexo capture API. <see cref="Capture"/> and <see cref="Identify"/> only queue a
+/// Sends events and identifies to the Vexo capture API.
+/// <see cref="Capture(string, string, object?, DateTimeOffset?, string?)"/> and <see cref="Identify"/> only queue a
 /// message; a background task sends the queue in batches. Create one client for your process and dispose it when the
 /// process stops: disposing sends what is still queued, for up to <see cref="VexoOptions.ShutdownTimeout"/>.
 /// </summary>
@@ -110,6 +111,17 @@ public sealed class VexoClient : IAsyncDisposable, IDisposable
     }
 
     /// <summary>
+    /// Queues an event that happened at a <see cref="DateTime"/>. A <see cref="DateTime"/> of kind
+    /// <see cref="DateTimeKind.Unspecified"/> has no time zone and is read as UTC, as in every Vexo SDK; .NET's implicit
+    /// conversion to <see cref="DateTimeOffset"/> would read it as local time. Never throws.
+    /// </summary>
+    /// <inheritdoc cref="Capture(string, string, object?, DateTimeOffset?, string?)"/>
+    public void Capture(string distinctId, string eventName, object? properties, DateTime? timestamp,
+        string? messageId = null) =>
+        Capture(distinctId, eventName, properties, timestamp is DateTime t ? new DateTimeOffset(AsUtc(t)) : null,
+            messageId);
+
+    /// <summary>
     /// Queues an identify: merges the traits into the person's traits, and a trait set to null is removed. Never throws:
     /// an invalid message is dropped and reported to OnError.
     /// </summary>
@@ -196,6 +208,14 @@ public sealed class VexoClient : IAsyncDisposable, IDisposable
     }
 
     private void OnProcessExit(object? sender, EventArgs e) => Dispose();
+
+    // A DateTime in UTC. One of kind Unspecified has no time zone and is read as UTC (SPEC.md M5).
+    internal static DateTime AsUtc(DateTime value) => value.Kind switch
+    {
+        DateTimeKind.Unspecified => DateTime.SpecifyKind(value, DateTimeKind.Utc),
+        DateTimeKind.Local => value.ToUniversalTime(),
+        _ => value,
+    };
 
     // Sends on the flush interval, or as soon as flushAt messages are queued; after a stop, sends once more and ends.
     private async Task RunAsync()

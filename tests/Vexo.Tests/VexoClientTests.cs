@@ -91,6 +91,38 @@ public sealed class VexoClientTests : IDisposable
     }
 
     [Fact]
+    public async Task ReadsADateTimeTimestampOfKindUnspecifiedAsUtc()
+    {
+        // A local time zone that isn't UTC, so that reading the DateTime as local time would change the instant.
+        string? zone = Environment.GetEnvironmentVariable("TZ");
+        Environment.SetEnvironmentVariable("TZ", "Asia/Tokyo");
+        TimeZoneInfo.ClearCachedData();
+        try
+        {
+            Assert.Equal(TimeSpan.FromHours(9), TimeZoneInfo.Local.BaseUtcOffset);
+            using var api = new FakeApi();
+            VexoClient vexo = Client(api);
+            var noon = new DateTime(2026, 11, 7, 12, 0, 0);
+            DateTime? nullableNoon = noon;
+
+            vexo.Capture("u", "unspecified", null, noon);
+            vexo.Capture("u", "nullable", null, nullableNoon);
+            vexo.Capture("u", "utc", null, DateTime.SpecifyKind(noon, DateTimeKind.Utc));
+            vexo.Capture("u", "local", null, DateTime.SpecifyKind(noon, DateTimeKind.Local));
+            await vexo.FlushAsync();
+
+            long[] timestamps = Assert.Single(api.Requests).Batch.Select(m => m.GetProperty("timestamp").GetInt64()).ToArray();
+            const long NoonUtc = 1_794_052_800_000;
+            Assert.Equal([NoonUtc, NoonUtc, NoonUtc, NoonUtc - 9 * 3_600_000], timestamps);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("TZ", zone);
+            TimeZoneInfo.ClearCachedData();
+        }
+    }
+
+    [Fact]
     public async Task NeverThrowsOnBadInputAndReportsEachDroppedMessage()
     {
         using var api = new FakeApi();

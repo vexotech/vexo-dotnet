@@ -101,7 +101,7 @@ The constructor throws `ArgumentException` when the API key is missing or an opt
 Queues an event. Only `distinctId` and `eventName` are required.
 
 - `properties`: an object that serializes to a JSON object, such as a dictionary, an anonymous type, or a class. Property names of anonymous types and classes are sent in camelCase, as ASP.NET Core does; dictionary keys are sent as they are.
-- `timestamp`: a `DateTimeOffset`, sent as integer epoch milliseconds. It defaults to the time you call `Capture()`. A `DateTime` converts to it implicitly; .NET reads a `DateTime` of kind `Unspecified` as local time, so pass a UTC `DateTime` or a `DateTimeOffset`. For epoch milliseconds, use `DateTimeOffset.FromUnixTimeMilliseconds()`.
+- `timestamp`: a `DateTimeOffset` or a `DateTime`, sent as integer epoch milliseconds. It defaults to the time you call `Capture()`. A `DateTime` of kind `Unspecified` has no time zone and is read as UTC, as in every Vexo SDK, not as local time; one of kind `Local` is converted to UTC. For epoch milliseconds, use `DateTimeOffset.FromUnixTimeMilliseconds()`.
 - `messageId`: a unique ID that makes retries safe. It defaults to a new UUID. Pass your own, such as an order ID, so that a message you send twice is stored once.
 
 ### `vexo.Identify(distinctId, traits)`
