@@ -60,11 +60,15 @@ static string? Text(JsonElement step, string name) =>
     step.TryGetProperty(name, out JsonElement value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
 
 // The step's properties. "poison" adds a dictionary that contains itself, which System.Text.Json refuses as a cycle;
-// "nan" adds double.NaN, which it refuses as a number JSON can't hold.
+// "nan" adds double.NaN, which it refuses as a number JSON can't hold. "dateTime", "decimal", and "invalidUnicode" add
+// a DateTimeOffset, a decimal, and a string with a lone surrogate.
 static object? Properties(JsonElement step)
 {
     bool poison = Flag(step, "poison"), nan = Flag(step, "nan");
-    if (!step.TryGetProperty("properties", out JsonElement properties) && !poison && !nan)
+    string? dateTime = Text(step, "dateTime"), number = Text(step, "decimal");
+    bool invalidUnicode = Flag(step, "invalidUnicode");
+    if (!step.TryGetProperty("properties", out JsonElement properties) && !poison && !nan && dateTime is null
+        && number is null && !invalidUnicode)
     {
         return null;
     }
@@ -80,6 +84,18 @@ static object? Properties(JsonElement step)
     if (nan)
     {
         result["nan"] = double.NaN;
+    }
+    if (dateTime is not null)
+    {
+        result["dateTime"] = DateTimeOffset.Parse(dateTime, CultureInfo.InvariantCulture);
+    }
+    if (number is not null)
+    {
+        result["decimal"] = decimal.Parse(number, NumberStyles.Float, CultureInfo.InvariantCulture);
+    }
+    if (invalidUnicode)
+    {
+        result["invalidUnicode"] = "ok\uD800";
     }
     return result;
 }
