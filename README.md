@@ -10,7 +10,7 @@ Send events and identifies to [Vexo](https://vexo.co) from your .NET backend: pu
 ## Install
 
 ```bash
-dotnet add package Vexo.Server
+dotnet add package Vexo.Server --version 0.1.0
 ```
 
 ## Usage
