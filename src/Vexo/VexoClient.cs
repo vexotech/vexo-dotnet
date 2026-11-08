@@ -65,7 +65,7 @@ public sealed class VexoClient : IAsyncDisposable, IDisposable
             throw new ArgumentException("An API key is required.", nameof(apiKey));
         }
         options ??= new VexoOptions();
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(options.FlushInterval, TimeSpan.Zero);
+        ArgumentOutOfRangeException.ThrowIfLessThan(options.FlushInterval, TimeSpan.Zero);
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(options.Timeout, TimeSpan.Zero);
         ArgumentOutOfRangeException.ThrowIfLessThan(options.ShutdownTimeout, TimeSpan.Zero);
         ArgumentOutOfRangeException.ThrowIfNegative(options.MaxRetries);
@@ -74,7 +74,8 @@ public sealed class VexoClient : IAsyncDisposable, IDisposable
         this.apiKey = apiKey;
         batchUri = new Uri(options.Host.TrimEnd('/') + "/v1/batch");
         flushAt = Math.Clamp(options.FlushAt, 1, MaxBatchSize);
-        flushInterval = options.FlushInterval;
+        // Zero turns the interval timer off: the sender then waits for flushAt messages, FlushAsync, or disposal.
+        flushInterval = options.FlushInterval == TimeSpan.Zero ? Timeout.InfiniteTimeSpan : options.FlushInterval;
         maxRetries = options.MaxRetries;
         timeout = options.Timeout;
         shutdownTimeout = options.ShutdownTimeout;

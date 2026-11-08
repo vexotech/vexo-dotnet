@@ -88,7 +88,7 @@ The constructor throws `ArgumentException` when the API key is missing or an opt
 | --- | --- | --- |
 | `Host` | `https://api.vexo.co` | API base URL. |
 | `FlushAt` | `100` | Send a batch when this many messages are queued (1 to 500). |
-| `FlushInterval` | 10 seconds | Send whatever is queued this often. |
+| `FlushInterval` | 10 seconds | Send whatever is queued this often. `TimeSpan.Zero` turns the timer off, so messages go out only on `FlushAt`, `FlushAsync()`, and disposal. |
 | `MaxRetries` | `3` | Retries for network errors, timeouts, `429`, and `5xx` responses. |
 | `MaxQueueSize` | `10000` | Messages kept in memory; new messages are dropped once it's full. |
 | `Timeout` | 10 seconds | The timeout of each request. |

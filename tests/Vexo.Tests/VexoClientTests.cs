@@ -218,6 +218,20 @@ public sealed class VexoClientTests : IDisposable
     }
 
     [Fact]
+    public async Task AZeroFlushIntervalTurnsTheTimerOff()
+    {
+        using var api = new FakeApi();
+        VexoClient vexo = Client(api, new VexoOptions { FlushInterval = TimeSpan.Zero });
+
+        vexo.Capture("u", "a");
+        await Task.Delay(300);
+        Assert.Empty(api.Requests);
+        await vexo.FlushAsync();
+
+        Assert.Equal(["a"], Assert.Single(api.Requests).Events);
+    }
+
+    [Fact]
     public async Task SplitsBatchesToKeepEachRequestUnder5MB()
     {
         using var api = new FakeApi();
