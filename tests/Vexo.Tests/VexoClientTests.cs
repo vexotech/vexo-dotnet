@@ -169,19 +169,26 @@ public sealed class VexoClientTests : IDisposable
         vexo.Capture("u", "priced", new Dictionary<string, object?>
         {
             ["amount"] = 9.90m,
+            ["tiny"] = 0.00000012345678901234567m,
             ["orderId"] = Guid.Parse("5b0c8f0e-6d1e-4f62-9d55-3f1f0f6a2b71"),
             ["at"] = new DateTimeOffset(2026, 1, 2, 0, 0, 0, TimeSpan.Zero),
+            ["offset"] = new DateTimeOffset(2026, 11, 7, 13, 0, 0, TimeSpan.FromHours(1)).AddTicks(1_234_567),
+            ["unspecified"] = new DateTime(2026, 11, 7, 12, 0, 0),
+            ["day"] = new DateOnly(2026, 11, 7),
             ["coupon"] = null,
             ["city"] = "São Paulo",
+            ["text"] = "ok\uD800",
         });
-        vexo.Identify("u", new { Plan = "pro" });
+        vexo.Identify("u", new { Plan = "pro", Credit = (decimal?)1.50m });
         await vexo.FlushAsync();
 
         JsonElement[] batch = Assert.Single(api.Requests).Batch;
         Assert.Equal(
-            """{"amount":9.90,"orderId":"5b0c8f0e-6d1e-4f62-9d55-3f1f0f6a2b71","at":"2026-01-02T00:00:00+00:00","coupon":null,"city":"São Paulo"}""",
+            """
+            {"amount":"9.90","tiny":"0.00000012345678901234567","orderId":"5b0c8f0e-6d1e-4f62-9d55-3f1f0f6a2b71","at":"2026-01-02T00:00:00.000Z","offset":"2026-11-07T12:00:00.123Z","unspecified":"2026-11-07T12:00:00.000Z","day":"2026-11-07","coupon":null,"city":"São Paulo","text":"ok�"}
+            """,
             batch[0].GetProperty("properties").GetRawText());
-        Assert.Equal("""{"plan":"pro"}""", batch[1].GetProperty("traits").GetRawText());
+        Assert.Equal("""{"plan":"pro","credit":"1.50"}""", batch[1].GetProperty("traits").GetRawText());
     }
 
     private sealed class Cycle

@@ -24,6 +24,11 @@ public sealed class VexoClient : IAsyncDisposable, IDisposable
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
     {
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        // Values in the form every Vexo SDK sends them (SPEC.md M11).
+        Converters =
+        {
+            new JsonValues.DateTimeConverter(), new JsonValues.DateTimeOffsetConverter(), new JsonValues.DecimalConverter(),
+        },
     };
     private static readonly JsonWriterOptions WriterOptions = new() { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
     private static readonly CaptureResult NoResult = new(null, null);
