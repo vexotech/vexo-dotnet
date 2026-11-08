@@ -168,12 +168,14 @@ public sealed class VexoClientTests : IDisposable
         vexo.Capture("u", "ok");
         vexo.Capture("u", "cycle", cycle);
         vexo.Capture("u", "nan", new { ratio = double.NaN });
+        vexo.Capture("u", "nested_infinity", new { stats = new[] { new { max = float.PositiveInfinity } } });
+        vexo.Identify("u", new Dictionary<string, object?> { ["score"] = double.NegativeInfinity });
         vexo.Capture("u", "unsupported", new { type = typeof(string) });
         vexo.Capture("u", "ok_too");
         await vexo.FlushAsync();
 
         Assert.Equal(["ok", "ok_too"], Assert.Single(api.Requests).Events);
-        Assert.Equal(3, Errors.Length);
+        Assert.Equal(5, Errors.Length);
         Assert.All(Errors, error => Assert.Contains("JSON", error.Message));
     }
 

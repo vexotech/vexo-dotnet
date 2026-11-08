@@ -120,7 +120,7 @@ Stops the background task and sends everything queued, for up to `ShutdownTimeou
 
 The client never throws from `Capture()` or `Identify()`. Failures go to `OnError` as a `VexoException`:
 
-- Values serialize with `System.Text.Json`: a `decimal` is a JSON number, and a `Guid`, `DateTime`, or `DateTimeOffset` is a string. A message that can't be serialized (for example, a circular reference or a `double.NaN`), that isn't a JSON object, or that is over 5 MB is dropped when you queue it; the rest of the queue is unaffected.
+- Values serialize with `System.Text.Json`: a `decimal` is a JSON number, and a `Guid`, `DateTime`, or `DateTimeOffset` is a string. A message that can't be serialized (for example, a circular reference, or a `NaN` or infinite number anywhere in it, which the API would reject with the whole batch), that isn't a JSON object, or that is over 5 MB is dropped when you queue it; the rest of the queue is unaffected.
 - A batch that still fails after the retries, or that the API rejects with a `4xx`, arrives with `Batch` (the messages it held, as JSON) and, when the API answered, `StatusCode`. After that, the next batches get a single attempt until a request succeeds, so an unreachable API doesn't hold up your process.
 - A message the API dropped (for example, properties over 64 KB) arrives in `Dropped`, a list of `VexoDroppedMessage` with the message and the reason. Messages the API reports as `failed` are retried, and reported the same way if they still fail.
 - Messages still queued at the shutdown deadline arrive as one error with `Batch`.

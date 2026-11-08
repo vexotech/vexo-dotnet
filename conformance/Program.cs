@@ -59,11 +59,12 @@ TimeSpan? Millis(string name) =>
 static string? Text(JsonElement step, string name) =>
     step.TryGetProperty(name, out JsonElement value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
 
-// The step's properties; "poison" adds a value System.Text.Json refuses to write.
+// The step's properties. "poison" adds a dictionary that contains itself, which System.Text.Json refuses as a cycle;
+// "nan" adds double.NaN, which it refuses as a number JSON can't hold.
 static object? Properties(JsonElement step)
 {
-    bool poison = step.TryGetProperty("poison", out JsonElement flag) && flag.GetBoolean();
-    if (!step.TryGetProperty("properties", out JsonElement properties) && !poison)
+    bool poison = Flag(step, "poison"), nan = Flag(step, "nan");
+    if (!step.TryGetProperty("properties", out JsonElement properties) && !poison && !nan)
     {
         return null;
     }
@@ -72,10 +73,18 @@ static object? Properties(JsonElement step)
         : new Dictionary<string, object?>();
     if (poison)
     {
-        result["poison"] = double.NaN;
+        var cycle = new Dictionary<string, object?>();
+        cycle["self"] = cycle;
+        result["poison"] = cycle;
+    }
+    if (nan)
+    {
+        result["nan"] = double.NaN;
     }
     return result;
 }
+
+static bool Flag(JsonElement step, string name) => step.TryGetProperty(name, out JsonElement value) && value.GetBoolean();
 
 static DateTimeOffset? Timestamp(JsonElement step) =>
     step.TryGetProperty("at", out JsonElement at) ? DateTimeOffset.Parse(at.GetString()!, CultureInfo.InvariantCulture)
