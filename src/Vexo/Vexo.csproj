@@ -14,6 +14,8 @@
     <PackageTags>vexo;analytics;server-side;events</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://docs.vexo.co/server-side/capture</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/vexotech/vexo-dotnet</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
